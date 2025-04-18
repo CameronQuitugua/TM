@@ -3,82 +3,114 @@ package tm;
 import java.io.*;
 import java.util.*;
 
-public class TMSimulator {
+/**
+ * Static class to represent a Turing Machine transition
+ */
+class Transition {
+    int nextState;
+    int writeSymbol;
+    char move;
 
-    static class Transition {
-        int nextState;
-        int writeSymbol;
-        char moveDirection;
-        Transition(int ns, int ws, char dir) {
-            nextState = ns;
-            writeSymbol = ws;
-            moveDirection = dir;
+    // Transition constructor
+    Transition(int nextState, int writeSymbol, char move) {
+        this.nextState = nextState;
+        this.writeSymbol = writeSymbol;
+        this.move = move;
+    }
+}
+
+/**
+ * Represents the Turing Machine with states, tape, and transition logic
+ */
+class TuringMachine {
+    private int numStates;
+    private int numSymbols;
+    private Map<Integer, Map<Integer, Transition>> transitions;
+    private Map<Integer, Integer> tape;
+    private int head;
+    private int currentState;
+    private int leftmost;
+    private int rightmost;
+
+    public TuringMachine(int numStates, int numSymbols, Map<Integer, Map<Integer, Transition>> transitions, List<Integer> tapeInput) {
+        this.numStates = numStates;
+        this.numSymbols = numSymbols;
+        this.transitions = transitions;
+        this.tape = new HashMap<>();
+        this.head = 0;
+        this.currentState = 0;
+
+        for (int i = 0; i < tapeInput.size(); i++) {
+            tape.put(i, tapeInput.get(i));
+        }
+
+        this.leftmost = 0;
+        this.rightmost = tapeInput.size() - 1;
+    }
+
+    public void run() {
+        while (currentState != numStates - 1) {
+            int symbol = tape.getOrDefault(head, 0);
+            Transition trans = transitions.get(currentState).get(symbol);
+            tape.put(head, trans.writeSymbol);
+
+            head = (trans.move == 'R') ? head + 1 : head - 1;
+            leftmost = Math.min(leftmost, head);
+            rightmost = Math.max(rightmost, head);
+
+            currentState = trans.nextState;
         }
     }
 
+    public String getTapeOutput() {
+        StringBuilder output = new StringBuilder();
+        for (int i = leftmost; i <= rightmost; i++) {
+            output.append(tape.getOrDefault(i, 0));
+        }
+        return output.toString();
+    }
+}
+
+/**
+ * Main class that simulates a Turing Machine from input file.
+ */
+public class TMSimulator {
+
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
-            System.err.println("Missing input file name.");
+            System.err.println("Please enter a valid input file name.");
             return;
         }
 
-        BufferedReader reader = new BufferedReader(new FileReader(args[0]));
-        int numStates = Integer.parseInt(reader.readLine().trim());
-        int sigmaSize = Integer.parseInt(reader.readLine().trim());
+        BufferedReader file = new BufferedReader(new FileReader(args[0]));
 
-        int gammaSize = sigmaSize + 1; // symbols 0 to m
+        int numStates = Integer.parseInt(file.readLine().trim());
+        int numSymbols = Integer.parseInt(file.readLine().trim());
         Map<Integer, Map<Integer, Transition>> transitions = new HashMap<>();
 
-        for (int state = 0; state < numStates - 1; state++) {
-            transitions.put(state, new HashMap<>());
-            for (int symbol = 0; symbol < gammaSize; symbol++) {
-                String[] parts = reader.readLine().trim().split(",");
+        for (int i = 0; i < numStates - 1; i++) {
+            transitions.put(i, new HashMap<>());
+            for (int j = 0; j <= numSymbols; j++) {
+                String[] parts = file.readLine().trim().split(",");
                 int nextState = Integer.parseInt(parts[0]);
                 int writeSymbol = Integer.parseInt(parts[1]);
                 char move = parts[2].charAt(0);
-                transitions.get(state).put(symbol, new Transition(nextState, writeSymbol, move));
+                transitions.get(i).put(j, new Transition(nextState, writeSymbol, move));
             }
         }
 
-        // Tape setup
-        String inputLine = reader.readLine();
+        String inputLine = file.readLine();
         List<Integer> tape = new ArrayList<>();
         if (inputLine == null || inputLine.trim().isEmpty()) {
-            tape.add(0); // blank start
+            tape.add(0); // Blank tape
         } else {
             for (char c : inputLine.trim().toCharArray()) {
                 tape.add(Character.getNumericValue(c));
             }
         }
 
-        int head = 0, state = 0;
-        Map<Integer, Integer> tapeMap = new HashMap<>();
-        for (int i = 0; i < tape.size(); i++) {
-            tapeMap.put(i, tape.get(i));
-        }
-
-        int leftmost = 0, rightmost = tape.size() - 1;
-
-        // Simulation
-        while (state != numStates - 1) {
-            int symbol = tapeMap.getOrDefault(head, 0);
-            Transition trans = transitions.get(state).get(symbol);
-            tapeMap.put(head, trans.writeSymbol);
-            if (trans.moveDirection == 'R') head++;
-            else head--;
-
-            if (head < leftmost) leftmost = head;
-            if (head > rightmost) rightmost = head;
-
-            state = trans.nextState;
-        }
-
-        // Output visited tape content
-        StringBuilder output = new StringBuilder();
-        for (int i = leftmost; i <= rightmost; i++) {
-            output.append(tapeMap.getOrDefault(i, 0));
-        }
-
-        System.out.println(output.toString());
+        TuringMachine tm = new TuringMachine(numStates, numSymbols, transitions, tape);
+        tm.run();
+        System.out.println(tm.getTapeOutput());
     }
 }
