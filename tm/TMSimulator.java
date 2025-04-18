@@ -63,11 +63,24 @@ class TuringMachine {
     }
 
     public String getTapeOutput() {
+        String str = "Output: \n";
+
+        int sumSymb = 0;
         StringBuilder output = new StringBuilder();
         for (int i = leftmost; i <= rightmost; i++) {
+            sumSymb += tape.getOrDefault(i, 0);
             output.append(tape.getOrDefault(i, 0));
+            // outLength++;
         }
-        return output.toString();
+
+        if (output.length() > 300) {
+            str += "Very Large\n";
+        } else {
+            str += output.toString() + "\n";
+        }
+        str += "Output length: " + output.length() + "\nSum of Symbols: " + sumSymb; 
+
+        return str;
     }
 }
 
