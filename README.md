@@ -14,12 +14,31 @@ This project went relatively well. The prep work for this project was the hardes
 
 We understood most of this project and don't have anything to ask about specific concepts. Figuring out how the files were read was the hardest/most confusing part. To make our code object oriented and easy to understand, we separated our "Transition" class from the "TuringMachine" class, which were both separate from our main class to run the simulation. We also used javadoc comments for clarification on what each method/class does. If we could change our design process, we would have started the project sooner so we weren't in as much of a rush.
 
-## Compiling and Using  **********TODO*************
+## Compiling and Using
 
-This section should tell the user how to compile your code.  It is
-also appropriate to instruct the user how to use your code. Does your
-program require user input? If so, what does your user need to know
-about it to use it as quickly as possible?
+While inside of the TM folder, navigate into the tm subfolder.
+```
+$ cd tm
+```
+
+Next compile the TMSimulator.java file with the following command.
+```
+$ javac TMSimulator.java
+```
+
+Navigate back, out of tm subfolder, into the main folder
+```
+$ cd ..
+```
+
+Lastly run the following line with a required .txt file input containing a proper format. 
+```
+$ java tm.TMSimulator.java <file.txt>
+```
+You can run the code with the following .txt files that are provided in TM: <b>file0.txt</b>, <b>file2.txt</b>, <b>file5.txt</b>.
+
+The result will output to the terminal the resulting tape, tape length, and the sum of symbols. 
+
 
 ## Sources used
 
