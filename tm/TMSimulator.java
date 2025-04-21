@@ -32,6 +32,15 @@ class TuringMachine {
     private int leftmost;
     private int rightmost;
 
+    /**
+     * Constructor to initialize the Turing Machine
+     * 
+     * @param numStates
+     * @param numSymbols
+     * @param transitions
+     * @param tapeInput
+     * @author Hailey and Cam
+     */
     public TuringMachine(int numStates, int numSymbols, Map<Integer, Map<Integer, Transition>> transitions, List<Integer> tapeInput) {
         this.numStates = numStates;
         this.numSymbols = numSymbols;
@@ -48,20 +57,31 @@ class TuringMachine {
         this.rightmost = tapeInput.size() - 1;
     }
 
+    /**
+     * Runs the turing machine
+     */
     public void run() {
         while (currentState != numStates - 1) {
-            int symbol = tape.getOrDefault(head, 0);
-            Transition trans = transitions.get(currentState).get(symbol);
-            tape.put(head, trans.writeSymbol);
+            int symbol = tape.getOrDefault(head, 0); // read current symbol
+            Transition transition = transitions.get(currentState).get(symbol); // get associated transition
+            tape.put(head, transition.writeSymbol); // write symbol to tape
 
-            head = (trans.move == 'R') ? head + 1 : head - 1;
+            // move the head left or right
+            head = (transition.move == 'R') ? head + 1 : head - 1;
             leftmost = Math.min(leftmost, head);
             rightmost = Math.max(rightmost, head);
 
-            currentState = trans.nextState;
+            // transition to next state
+            currentState = transition.nextState;
         }
     }
 
+    /**
+     * Constructs and returns the tape after execution in a string format
+     * 
+     * @return string representation of the tape
+     * @author Hailey and Cam
+     */
     public String getTapeOutput() {
         String str = "Output: \n";
 
@@ -97,10 +117,12 @@ public class TMSimulator {
 
         BufferedReader file = new BufferedReader(new FileReader(args[0]));
 
+        // read number of states and number of symbols
         int numStates = Integer.parseInt(file.readLine().trim());
         int numSymbols = Integer.parseInt(file.readLine().trim());
         Map<Integer, Map<Integer, Transition>> transitions = new HashMap<>();
 
+        // iterate through transition table
         for (int i = 0; i < numStates - 1; i++) {
             transitions.put(i, new HashMap<>());
             for (int j = 0; j <= numSymbols; j++) {
@@ -112,6 +134,7 @@ public class TMSimulator {
             }
         }
 
+        // read the initial tape input
         String inputLine = file.readLine();
         List<Integer> tape = new ArrayList<>();
         if (inputLine == null || inputLine.trim().isEmpty()) {
@@ -122,6 +145,7 @@ public class TMSimulator {
             }
         }
 
+        // create/run the machine
         TuringMachine tm = new TuringMachine(numStates, numSymbols, transitions, tape);
         tm.run();
         System.out.println(tm.getTapeOutput());
